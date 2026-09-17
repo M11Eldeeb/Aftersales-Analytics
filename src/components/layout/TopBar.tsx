@@ -18,12 +18,12 @@ export async function TopBar({
 
   return (
     <header className="sticky top-0 z-10 bg-white/90 backdrop-blur border-b border-slate-200">
-      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 px-6 py-3.5">
-        <div className="flex flex-wrap items-center gap-3 min-w-0">
-          <h1 className="font-headline text-lg font-bold text-slate-900 truncate">{title}</h1>
+      <div className="flex items-center justify-between gap-x-3 px-6 py-3.5">
+        <div className="flex items-center gap-3 min-w-0 shrink">
+          <h1 className="font-headline text-lg font-bold text-slate-900 truncate shrink-0">{title}</h1>
           <BranchDateFilter branches={branches} />
         </div>
-        <div className="flex flex-wrap items-center gap-3 min-w-0">
+        <div className="flex items-center gap-2 min-w-0 shrink-0">
           <HeaderSearch />
 
           {isAdmin && (
