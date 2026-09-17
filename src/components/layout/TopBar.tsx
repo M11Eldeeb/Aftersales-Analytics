@@ -1,8 +1,7 @@
 import Link from 'next/link'
-import { UploadCloud, BellRing, User } from 'lucide-react'
+import { BellRing, User } from 'lucide-react'
 import { SignOutButton } from './SignOutButton'
 import { BranchDateFilter } from '../filters/BranchDateFilter'
-import { HeaderSearch } from './HeaderSearch'
 import { getFailedUploadsCount } from '@/lib/dashboard/getViewer'
 
 export async function TopBar({
@@ -24,18 +23,6 @@ export async function TopBar({
           <BranchDateFilter branches={branches} />
         </div>
         <div className="flex items-center gap-2 min-w-0 shrink-0">
-          <HeaderSearch />
-
-          {isAdmin && (
-            <Link
-              href="/admin/upload"
-              className="flex items-center gap-2 rounded-lg bg-slate-900 text-white px-3.5 py-2 text-sm font-semibold hover:bg-slate-800 transition"
-            >
-              <UploadCloud size={15} />
-              Upload Report
-            </Link>
-          )}
-
           {isAdmin && failedUploads > 0 && (
             <Link
               href="/admin/upload"
