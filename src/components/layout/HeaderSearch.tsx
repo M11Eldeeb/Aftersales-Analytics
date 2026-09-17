@@ -49,7 +49,7 @@ export function HeaderSearch() {
   }, [])
 
   return (
-    <div ref={containerRef} className="relative w-64">
+    <div ref={containerRef} className="relative w-40 sm:w-64">
       <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
       <input
         type="text"

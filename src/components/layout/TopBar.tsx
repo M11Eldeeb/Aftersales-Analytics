@@ -18,12 +18,12 @@ export async function TopBar({
 
   return (
     <header className="sticky top-0 z-10 bg-white/90 backdrop-blur border-b border-slate-200">
-      <div className="flex items-center justify-between gap-4 px-6 py-3.5">
-        <div className="flex items-center gap-4">
-          <h1 className="font-headline text-lg font-bold text-slate-900">{title}</h1>
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 px-6 py-3.5">
+        <div className="flex flex-wrap items-center gap-3 min-w-0">
+          <h1 className="font-headline text-lg font-bold text-slate-900 truncate">{title}</h1>
           <BranchDateFilter branches={branches} />
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3 min-w-0">
           <HeaderSearch />
 
           {isAdmin && (
@@ -49,9 +49,9 @@ export async function TopBar({
 
           <div className="h-6 w-px bg-slate-200" />
 
-          <div className="flex items-center gap-2.5">
-            <div className="text-right leading-tight">
-              <div className="text-sm font-semibold text-slate-800">{userName}</div>
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="text-right leading-tight hidden sm:block max-w-[140px]">
+              <div className="text-sm font-semibold text-slate-800 truncate">{userName}</div>
               <div className="text-xs text-slate-400 capitalize">{userRole.replace('_', ' ')}</div>
             </div>
             <div className="h-8 w-8 rounded-full bg-slate-900 flex items-center justify-center shrink-0">
