@@ -6,7 +6,7 @@ import { ChartCard, EmptyState } from '@/components/ui/ChartCard'
 import { TrendLineChart } from '@/components/charts/TrendLineChart'
 import { resolveFilters, formatSAR, formatNumber, formatPct, monthLabel } from '@/lib/dashboard/filters'
 import { SERIES } from '@/lib/chartPalette'
-import { DollarSign, Package, Gauge, Percent, Smile, MessageSquareWarning, ShieldCheck, Repeat, ClipboardList, Layers } from 'lucide-react'
+import { DollarSign, Package, Gauge, Percent, Smile, MessageSquareWarning, ShieldCheck, ClipboardList, Layers } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 
@@ -66,8 +66,14 @@ export default async function ExecutiveOverviewPage({ searchParams }: { searchPa
   const wipRows = wipRes.data ?? []
   const openWip = wipRows.filter((r) => !/complete|invoiced|cancel/i.test(r.wip_status ?? ''))
   const openWipCount = openWip.reduce((a, r) => a + r.wip_count, 0)
-  const repeatRepairCount = wipRows.reduce((a, r) => a + (r.repeat_repair_count ?? 0), 0)
   const totalWipCount = wipRows.reduce((a, r) => a + r.wip_count, 0)
+
+  const hasLabor = laborRes.data && laborRes.data.length > 0
+  const hasNps = npsRes.data && npsRes.data.length > 0
+  const hasComplaints = complaintsRes.data && complaintsRes.data.length > 0
+  const hasWarranty = warrantyRes.data && warrantyRes.data.length > 0
+  const hasWip = wipRows.length > 0
+  const hasVoc = hasNps || hasComplaints || hasWarranty
 
   const warrantyLast = warrantyByMonth.get(last)
   const warrantyValueLast = warrantyLast
@@ -113,56 +119,72 @@ export default async function ExecutiveOverviewPage({ searchParams }: { searchPa
         <section>
           <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">Sales &amp; recovery</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <KpiCard label="Labor sales (latest month)" value={formatSAR(laborLast, { compact: true })}
-              deltaPct={pctChange(laborLast, laborPrev)} sublabel={last ? monthLabel(last) : undefined}
-              icon={DollarSign} trend={laborTrend} trendColor={SERIES.blue} />
+            {hasLabor && (
+              <KpiCard label="Labor sales (latest month)" value={formatSAR(laborLast, { compact: true })}
+                deltaPct={pctChange(laborLast, laborPrev)} sublabel={last ? monthLabel(last) : undefined}
+                icon={DollarSign} trend={laborTrend} trendColor={SERIES.blue} />
+            )}
             <KpiCard label="Parts sales (latest month)" value={formatSAR(partsLast, { compact: true })}
               deltaPct={pctChange(partsLast, partsPrev)} sublabel={last ? monthLabel(last) : undefined}
               icon={Package} trend={partsTrend} trendColor={SERIES.orange} />
-            <KpiCard label="Recovery rate" value={recoveryRate !== null ? `${formatNumber(recoveryRate, 0)} SAR/hr` : '—'}
-              sublabel="Labor sales ÷ sold hours" icon={Gauge} trend={recoveryTrend} trendColor={SERIES.aqua} />
-            <KpiCard label="Parts-to-labor ratio" value={formatPct(partsToLabor)} sublabel="Healthy range ~90–110%"
-              icon={Percent} trend={partsToLaborTrend} trendColor={SERIES.violet} />
+            {hasLabor && (
+              <>
+                <KpiCard label="Recovery rate" value={recoveryRate !== null ? `${formatNumber(recoveryRate, 0)} SAR/hr` : '—'}
+                  sublabel="Labor sales ÷ sold hours" icon={Gauge} trend={recoveryTrend} trendColor={SERIES.aqua} />
+                <KpiCard label="Parts-to-labor ratio" value={formatPct(partsToLabor)} sublabel="Healthy range ~90–110%"
+                  icon={Percent} trend={partsToLaborTrend} trendColor={SERIES.violet} />
+              </>
+            )}
           </div>
         </section>
 
-        <section>
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">Customer experience &amp; VOC</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <KpiCard label="NPS score (latest month)" value={npsScore !== null ? formatNumber(npsScore, 1) : '—'}
-              sublabel={npsLast ? `${formatNumber(npsLast.nps_responses)} responses` : undefined}
-              icon={Smile} trend={npsSparkline} trendColor={SERIES.green} />
-            <KpiCard label="Complaints (latest month)" value={formatNumber(complaintsLast?.total_complaints ?? 0)}
-              sublabel={complaintsLast ? `${formatNumber(complaintsLast.valid_complaints)} valid` : undefined}
-              icon={MessageSquareWarning} trend={complaintsTrend} trendColor={SERIES.red} />
-            <KpiCard label="Warranty claim value (latest month)" value={formatSAR(warrantyValueLast, { compact: true })}
-              sublabel={warrantyLast ? `${formatNumber(warrantyLast.claims_count)} claims` : undefined}
-              icon={ShieldCheck} trend={warrantyValueTrend} trendColor={SERIES.magenta} />
-            <KpiCard label="Repeat repair rate" value={totalWipCount > 0 ? formatPct((repeatRepairCount / totalWipCount) * 100) : '—'}
-              sublabel="Of current WIP register" icon={Repeat} />
-          </div>
-        </section>
+        {hasVoc && (
+          <section>
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">Customer experience &amp; VOC</h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {hasNps && (
+                <KpiCard label="NPS score (latest month)" value={npsScore !== null ? formatNumber(npsScore, 1) : '—'}
+                  sublabel={npsLast ? `${formatNumber(npsLast.nps_responses)} responses` : undefined}
+                  icon={Smile} trend={npsSparkline} trendColor={SERIES.green} />
+              )}
+              {hasComplaints && (
+                <KpiCard label="Complaints (latest month)" value={formatNumber(complaintsLast?.total_complaints ?? 0)}
+                  sublabel={complaintsLast ? `${formatNumber(complaintsLast.valid_complaints)} valid` : undefined}
+                  icon={MessageSquareWarning} trend={complaintsTrend} trendColor={SERIES.red} />
+              )}
+              {hasWarranty && (
+                <KpiCard label="Warranty claim value (latest month)" value={formatSAR(warrantyValueLast, { compact: true })}
+                  sublabel={warrantyLast ? `${formatNumber(warrantyLast.claims_count)} claims` : undefined}
+                  icon={ShieldCheck} trend={warrantyValueTrend} trendColor={SERIES.magenta} />
+              )}
+            </div>
+          </section>
+        )}
 
-        <section>
-          <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">Operations snapshot</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <KpiCard label="Open work orders" value={formatNumber(openWipCount)} sublabel="Current WIP register" icon={ClipboardList} />
-            <KpiCard label="Total WIP on file" value={formatNumber(totalWipCount)} icon={Layers} />
-          </div>
-        </section>
+        {hasWip && (
+          <section>
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">Operations snapshot</h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <KpiCard label="Open work orders" value={formatNumber(openWipCount)} sublabel="Current WIP register" icon={ClipboardList} />
+              <KpiCard label="Total WIP on file" value={formatNumber(totalWipCount)} icon={Layers} />
+            </div>
+          </section>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <ChartCard title="Labor vs parts sales trend" subtitle={`Last ${filters.monthsBack} months`}>
+          <ChartCard title={hasLabor ? 'Labor vs parts sales trend' : 'Parts sales trend'} subtitle={`Last ${filters.monthsBack} months`}>
             {salesTrend.length ? (
-              <TrendLineChart data={salesTrend} series={[{ key: 'Labor', label: 'Labor sales' }, { key: 'Parts', label: 'Parts sales' }]}
+              <TrendLineChart data={salesTrend} series={hasLabor ? [{ key: 'Labor', label: 'Labor sales' }, { key: 'Parts', label: 'Parts sales' }] : [{ key: 'Parts', label: 'Parts sales' }]}
                 valueFormat="sarCompact" />
             ) : <EmptyState message="No sales data yet. Upload KH9 (labor) and MG5 (parts) exports to see this trend." />}
           </ChartCard>
-          <ChartCard title="NPS trend" subtitle={`Last ${filters.monthsBack} months`}>
-            {npsTrend.some((r) => r.NPS !== null) ? (
-              <TrendLineChart data={npsTrend} series={[{ key: 'NPS', label: 'NPS score' }]} valueFormat="number0" />
-            ) : <EmptyState message="No CSI survey data yet. Upload the Aftersales CSI report to see this trend." />}
-          </ChartCard>
+          {hasNps && (
+            <ChartCard title="NPS trend" subtitle={`Last ${filters.monthsBack} months`}>
+              {npsTrend.some((r) => r.NPS !== null) ? (
+                <TrendLineChart data={npsTrend} series={[{ key: 'NPS', label: 'NPS score' }]} valueFormat="number0" />
+              ) : <EmptyState message="No CSI survey data yet. Upload the Aftersales CSI report to see this trend." />}
+            </ChartCard>
+          )}
         </div>
       </div>
     </>

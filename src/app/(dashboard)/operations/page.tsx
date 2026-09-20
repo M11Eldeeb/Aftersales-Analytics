@@ -5,8 +5,8 @@ import { KpiCard } from '@/components/ui/KpiCard'
 import { ChartCard, EmptyState } from '@/components/ui/ChartCard'
 import { DonutChart } from '@/components/charts/DonutChart'
 import { BarComparisonChart } from '@/components/charts/BarComparisonChart'
-import { resolveFilters, formatSAR, formatNumber, formatPct } from '@/lib/dashboard/filters'
-import { ClipboardList, DollarSign, Timer, Repeat } from 'lucide-react'
+import { resolveFilters, formatSAR, formatNumber } from '@/lib/dashboard/filters'
+import { ClipboardList, DollarSign, Timer } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 
@@ -30,9 +30,6 @@ export default async function OperationsPage({ searchParams }: { searchParams: P
   }
   const [{ data: summaryRows }, { data: openRows }] = await Promise.all([summaryQuery, openOrdersQuery])
   const rows = summaryRows ?? []
-
-  const totalWip = rows.reduce((a, r) => a + Number(r.wip_count ?? 0), 0)
-  const repeatRepairCount = rows.reduce((a, r) => a + Number(r.repeat_repair_count ?? 0), 0)
 
   const byStatus = new Map<string, number>()
   for (const r of rows) byStatus.set(r.wip_status ?? 'Unknown', (byStatus.get(r.wip_status ?? 'Unknown') ?? 0) + Number(r.wip_count ?? 0))
@@ -64,7 +61,6 @@ export default async function OperationsPage({ searchParams }: { searchParams: P
           <KpiCard label="Open work orders" value={formatNumber((openRows ?? []).length)} sublabel="Current WIP register" icon={ClipboardList} />
           <KpiCard label="Open WIP value" value={formatSAR(openWipValue, { compact: true })} sublabel="Parts + labor outstanding" icon={DollarSign} />
           <KpiCard label="Avg age (open orders)" value={avgAge !== null ? `${formatNumber(avgAge, 0)} days` : '—'} icon={Timer} />
-          <KpiCard label="Repeat repair rate" value={totalWip > 0 ? formatPct((repeatRepairCount / totalWip) * 100) : '—'} sublabel="Of all WIP on file" icon={Repeat} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
