@@ -1,7 +1,7 @@
 'use client'
 
 import Link, { useLinkStatus } from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useSearchParams } from 'next/navigation'
 import type { LucideIcon } from 'lucide-react'
 import {
   LayoutDashboard, DollarSign, Wrench, Smile, MessageSquareWarning,
@@ -36,6 +36,9 @@ const ADMIN_NAV = [
 
 export function Sidebar({ isAdmin, lastSyncAt }: { isAdmin: boolean; lastSyncAt: string | null }) {
   const pathname = usePathname()
+  const searchParams = useSearchParams()
+  const query = searchParams.toString()
+  const withQuery = (href: string) => (query ? `${href}?${query}` : href)
 
   return (
     <aside className="w-72 shrink-0 bg-white border-r border-slate-200 flex flex-col h-screen sticky top-0">
@@ -69,7 +72,7 @@ export function Sidebar({ isAdmin, lastSyncAt }: { isAdmin: boolean; lastSyncAt:
           return (
             <Link
               key={href}
-              href={href}
+              href={withQuery(href)}
               className={`flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm transition ${
                 active ? 'bg-slate-900 text-white font-semibold' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
               }`}
